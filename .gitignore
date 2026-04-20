@@ -224,3 +224,15 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Ambientes Virtuais (qualquer pasta que comece com ponto e venv)
+.venv/
+venv/
+**/venv/
+**/.venv/
+
+# Python Cache
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
