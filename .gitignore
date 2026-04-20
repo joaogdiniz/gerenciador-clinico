@@ -205,3 +205,22 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Dependências do Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Pastas de build / produção
+dist/
+out/
+build/
+
+# Cache do Angular
+.angular/
+
+# Variáveis de ambiente do Front-end
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
