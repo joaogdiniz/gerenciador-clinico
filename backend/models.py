@@ -15,5 +15,22 @@ class User(Base):
     
     user_type: Mapped[str] = mapped_column(String(20), nullable=False)
 
+    __mapper_args__ = {
+        "polymorphic_on": "user_type",
+        "polymorphic_identity": "USUARIO"
+    }
+
     def __repr__(self) -> str:
-        return f"<User(name='{self.name}', type='{self.user_type}')>"
+        return f"<{self.__class__.__name__}(name='{self.name}', type='{self.user_type}')>"
+
+class Provider(User):
+    """Usuário Prestador: Cadastra serviços, horários, vê agenda e histórico."""
+    __mapper_args__ = {
+        "polymorphic_identity": "PRESTADOR",
+    }
+
+class Customer(User):
+    """Usuário Cliente: Busca serviços, marca consultas e vê histórico."""
+    __mapper_args__ = {
+        "polymorphic_identity": "CLIENTE",
+    }

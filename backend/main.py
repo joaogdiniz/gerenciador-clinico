@@ -7,6 +7,12 @@ import models
 import schemas
 models.Base.metadata.create_all(bind=engine)
 
+# Mapeamento de Factory: Relaciona a string do frontend com a classe do banco
+USER_CLASSES = {
+    "PRESTADOR": models.Provider,
+    "CLIENTE": models.Customer
+}
+
 # Inicializa o servidor FastAPI
 app = FastAPI(
     title="API - Gerenciador Clínico",
@@ -39,12 +45,19 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # Cria o objeto do SQLAlchemy
     secure_password = generate_hash_password(user.password)
     
-    new_user = models.User(
+    # Busca a classe correta no dicionário. Se a chave não existir, o fallback é models.User
+    ModelClass = USER_CLASSES.get(user.user_type, models.User)
+
+    # Instancia a classe de forma dinâmica
+    new_user = ModelClass(
         name=user.name,
         email=user.email,
-        password=secure_password, 
-        user_type=user.user_type
+        password=secure_password
     )
+
+    # Se caiu no fallback, injetamos a string manualmente, pois as subclasses já fazem isso via polymorphic_identity
+    if ModelClass is models.User:
+        new_user.user_type = user.user_type
 
     db.add(new_user)
     db.commit()
