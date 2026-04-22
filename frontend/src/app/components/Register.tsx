@@ -1,33 +1,52 @@
-import React from "react";
-import { User } from "lucide-react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 
-export default function Login() {
+export default function Register() {
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Estados dos inputs
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // Navega para a tela inicial ao fazer o login
-    navigate("/home");
+    // TODO: Conectar com o backend no futuro
+    // Por enquanto, apenas redireciona de volta para a tela de login após "cadastrar"
+    navigate("/");
   };
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center p-6 w-full pb-24">
       <div className="w-full max-w-sm flex flex-col items-center">
         <h1 className="text-2xl font-medium mb-8 text-zinc-800 dark:text-zinc-100">
-          Acesse sua conta
+          Crie sua conta
         </h1>
 
         <form
-          onSubmit={handleLogin}
+          onSubmit={handleRegister}
           className="w-full flex flex-col gap-5"
         >
+          {/* Caixa de Nome */}
+          <div>
+            <input
+              type="text"
+              placeholder="Nome completo"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-4 py-3.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-[#104d30] focus:ring-1 focus:ring-[#104d30] dark:focus:border-[#38a169] dark:focus:ring-[#38a169] transition-all"
+            />
+          </div>
+
           {/* Caixa de E-mail */}
           <div>
             <input
               type="email"
               placeholder="E-mail"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-[#104d30] focus:ring-1 focus:ring-[#104d30] dark:focus:border-[#38a169] dark:focus:ring-[#38a169] transition-all"
             />
           </div>
@@ -38,27 +57,29 @@ export default function Login() {
               type="password"
               placeholder="Senha"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-[#104d30] focus:ring-1 focus:ring-[#104d30] dark:focus:border-[#38a169] dark:focus:ring-[#38a169] transition-all"
             />
           </div>
 
-          {/* Botão Login */}
+          {/* Botão Cadastre-se */}
           <button
             type="submit"
             className="w-full bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98] mt-2"
           >
-            Login
+            Cadastre-se
           </button>
         </form>
 
-        {/* Link de Cadastro */}
+        {/* Link de Login */}
         <div className="mt-8">
           <button
             type="button"
-            onClick={() => navigate("/register")}
+            onClick={() => navigate("/")}
             className="text-[#104d30] dark:text-[#4ade80] hover:underline font-medium text-[15px] transition-colors"
           >
-            Não possui login? Cadastre-se
+            Já possuo uma conta
           </button>
         </div>
       </div>

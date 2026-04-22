@@ -3,6 +3,8 @@ import Root from "./components/Root";
 import Home from "./components/Home";
 import Login from "./components/Login";
 
+import Register from "./components/Register";
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -10,6 +12,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, Component: Login }, // A tela padrão agora é o Login e após o login, vai para a Home
       { path: "home", Component: Home },
+      { path: "register", Component: Register },
     ],
   },
 ]);
