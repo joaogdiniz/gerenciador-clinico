@@ -1,14 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { User } from "lucide-react";
 import { useNavigate } from "react-router";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Navega para a tela inicial ao fazer o login
-    navigate("/home");
+    setError(null);
+
+    try {
+      const response = await fetch("http://localhost:8000/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Erro ao fazer login.");
+      }
+      const userData = await response.json();
+
+      // Login com sucesso, vai para a home passando os dados do usuário
+      navigate("/home", { state: { user: userData } });
+    } catch (err: any) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -17,6 +41,12 @@ export default function Login() {
         <h1 className="text-2xl font-medium mb-8 text-zinc-800 dark:text-zinc-100">
           Acesse sua conta
         </h1>
+
+        {error && (
+          <div className="w-full mb-4 p-3 rounded bg-red-100 border border-red-400 text-red-700 text-sm text-center">
+            {error}
+          </div>
+        )}
 
         <form
           onSubmit={handleLogin}
@@ -28,6 +58,8 @@ export default function Login() {
               type="email"
               placeholder="E-mail"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-[#104d30] focus:ring-1 focus:ring-[#104d30] dark:focus:border-[#38a169] dark:focus:ring-[#38a169] transition-all"
             />
           </div>
@@ -38,6 +70,8 @@ export default function Login() {
               type="password"
               placeholder="Senha"
               required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3.5 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-[#104d30] focus:ring-1 focus:ring-[#104d30] dark:focus:border-[#38a169] dark:focus:ring-[#38a169] transition-all"
             />
           </div>

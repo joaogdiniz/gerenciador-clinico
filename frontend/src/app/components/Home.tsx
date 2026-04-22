@@ -1,14 +1,15 @@
 import React from "react";
 import { User } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 export default function Home() {
   const navigate = useNavigate();
-  const userName = "Usuário";
+  const location = useLocation();
+  const userName = location.state?.user?.name || "Usuário";
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center p-6 text-center pb-24 w-full">
-      {/* Ícone de Usuário sem foto padrão */}
+      {/* Ícone de Usuário sem foto */}
       <div className="mb-6 bg-zinc-100 dark:bg-zinc-900 p-8 rounded-full inline-flex items-center justify-center border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <User
           size={64}

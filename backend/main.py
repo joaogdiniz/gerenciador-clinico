@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, get_db
-from security import generate_hash_password
+from security import generate_hash_password, verify_password
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -64,3 +64,17 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user) # Atualiza o objeto para pegar o ID gerado pelo banco
 
     return new_user
+
+@app.post("/login/", response_model=schemas.UserResponse)
+def login_user(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
+    # Busca o usuário pelo email
+    user = db.query(models.User).filter(models.User.email == login_data.email).first()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
+        
+    # Verifica a senha
+    if not verify_password(login_data.password, user.password):
+        raise HTTPException(status_code=401, detail="Senha incorreta.")
+        
+    return user

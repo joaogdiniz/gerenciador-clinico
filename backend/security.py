@@ -1,12 +1,11 @@
-from passlib.context import CryptContext
-
-# Configura o Passlib para usar o algoritmo bcrypt
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 def generate_hash_password(password_text_plan: str) -> str:
     """Recebe a senha em texto e devolve o hash irreversível."""
-    return pwd_context.hash(password_text_plan)
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password_text_plan.encode('utf-8'), salt)
+    return hashed_password.decode('utf-8')
 
 def verify_password(password_text_plan: str, password_hashed: str) -> bool:
     """Compara a senha digitada no login com o hash salvo no banco."""
-    return pwd_context.verify(password_text_plan, password_hashed)
+    return bcrypt.checkpw(password_text_plan.encode('utf-8'), password_hashed.encode('utf-8'))
