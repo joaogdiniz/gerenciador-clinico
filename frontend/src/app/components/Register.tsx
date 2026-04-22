@@ -11,8 +11,7 @@ export default function Register() {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Conectar com o backend no futuro
-    // Por enquanto, apenas redireciona de volta para a tela de login após "cadastrar"
+    // TODO: Conectar com o backend no futuro, por enquanto apenas redireciona de volta para a tela de login
     navigate("/");
   };
 
@@ -63,13 +62,21 @@ export default function Register() {
             />
           </div>
 
-          {/* Botão Cadastre-se */}
-          <button
-            type="submit"
-            className="w-full bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98] mt-2"
-          >
-            Cadastre-se
-          </button>
+          {/* Botões de Cadastro */}
+          <div className="flex flex-col gap-3 mt-2">
+            <button
+              type="submit"
+              className="w-full bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]"
+            >
+              Cadastro de clientes
+            </button>
+            <button
+              type="submit"
+              className="w-full bg-transparent dark:bg-transparent text-[#104d30] dark:text-[#4ade80] border-2 border-[#104d30] dark:border-[#4ade80] hover:bg-zinc-50 dark:hover:bg-zinc-800/50 py-3.5 px-6 rounded-lg font-medium transition-all active:scale-[0.98]"
+            >
+              Cadastro de Prestador
+            </button>
+          </div>
         </form>
 
         {/* Link de Login */}
