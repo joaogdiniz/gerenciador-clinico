@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from database import engine, get_db
 from security import generate_hash_password
 from sqlalchemy.orm import Session
@@ -11,6 +12,14 @@ app = FastAPI(
     title="API - Gerenciador Clínico",
     description="Sistema de agendamentos para clínicas",
     version="0.1.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"], # Permite o front-end acessar o back-end
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"], 
 )
 
 # TESTE DO SERVIDOR
