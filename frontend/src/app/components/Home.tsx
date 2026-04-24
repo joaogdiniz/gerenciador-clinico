@@ -27,7 +27,10 @@ export default function Home() {
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center mb-8">
         {userType === "PRESTADOR" ? (
           <>
-            <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
+            <button 
+              onClick={() => navigate('/register-service')}
+              className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]"
+            >
               Cadastro de serviços
             </button>
             <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
