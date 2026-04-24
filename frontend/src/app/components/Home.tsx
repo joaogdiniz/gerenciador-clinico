@@ -6,6 +6,7 @@ export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const userName = location.state?.user?.name || "Usuário";
+  const userType = location.state?.user?.user_type || "CLIENTE";
 
   return (
     <main className="flex-1 flex flex-col items-center justify-center p-6 text-center pb-24 w-full">
@@ -24,12 +25,25 @@ export default function Home() {
 
       {/* Botões lado a lado */}
       <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md justify-center mb-8">
-        <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
-          BOTÃO 1
-        </button>
-        <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
-          BOTÃO 2
-        </button>
+        {userType === "PRESTADOR" ? (
+          <>
+            <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
+              Cadastro de serviços
+            </button>
+            <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
+              Calendário
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
+              Ver histórico de consultas
+            </button>
+            <button className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]">
+              Calendário
+            </button>
+          </>
+        )}
       </div>
 
       <button
