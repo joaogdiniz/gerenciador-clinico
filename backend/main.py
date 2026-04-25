@@ -116,3 +116,54 @@ def delete_service(service_id: int, db: Session = Depends(get_db)):
     db.delete(service)
     db.commit()
     return {"detail": "Serviço deletado com sucesso."}
+
+@app.post("/appointments/", response_model=schemas.AppointmentResponse)
+def create_appointment(appointment: schemas.AppointmentCreate, db: Session = Depends(get_db)):
+    new_app = models.Appointment(
+        customer_id=appointment.customer_id,
+        provider_id=appointment.provider_id,
+        service_id=appointment.service_id,
+        date_time=appointment.date_time,
+        status="confirmado"
+    )
+    db.add(new_app)
+    db.commit()
+    db.refresh(new_app)
+    return new_app
+
+@app.get("/services/search", response_model=list[schemas.ServiceResponse])
+def search_services(name: str = None, min_price: float = None, max_price: float = None, db: Session = Depends(get_db)):
+    query = db.query(models.Service)
+    if name:
+        query = query.filter(models.Service.name.ilike(f"%{name}%"))
+    if min_price is not None:
+        query = query.filter(models.Service.price >= min_price)
+    if max_price is not None:
+        query = query.filter(models.Service.price <= max_price)
+    
+    services = query.all()
+    valid_services = []
+
+    for service in services:
+        service_dict = {
+            "id": service.id,
+            "provider_id": service.provider_id,
+            "name": service.name,
+            "duration": service.duration,
+            "price": service.price,
+            "availability": {}
+        }
+        
+        appointments = db.query(models.Appointment).filter(models.Appointment.service_id == service.id).all()
+        booked_slots = [app.date_time for app in appointments]
+        
+        if service.availability:
+            for date_str, slots in service.availability.items():
+                available = [s for s in slots if f"{date_str} {s}" not in booked_slots]
+                if available:
+                    service_dict["availability"][date_str] = available
+            
+            if service_dict["availability"]:
+                valid_services.append(service_dict)
+
+    return valid_services

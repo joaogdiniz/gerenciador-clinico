@@ -47,3 +47,16 @@ class Service(Base):
 
     def __repr__(self) -> str:
         return f"<Service(name='{self.name}', duration={self.duration}, price={self.price})>"
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    customer_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    provider_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    service_id: Mapped[int] = mapped_column(ForeignKey("services.id"), nullable=False)
+    date_time: Mapped[str] = mapped_column(String(50), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), default="confirmado")
+
+    def __repr__(self) -> str:
+        return f"<Appointment(service_id={self.service_id}, date_time='{self.date_time}', status='{self.status}')>"

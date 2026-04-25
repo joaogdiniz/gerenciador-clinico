@@ -4,6 +4,7 @@ import Home from "./components/Home";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import RegisterService from "./components/RegisterService";
+import SearchServices from "./components/SearchServices";
 
 export const router = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
       { path: "home", Component: Home },
       { path: "register", Component: Register },
       { path: "register-service", Component: RegisterService },
+      { path: "search-services", Component: SearchServices },
     ],
   },
 ]);

@@ -36,3 +36,19 @@ class ServiceResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class AppointmentBase(BaseModel):
+    customer_id: int
+    provider_id: int
+    service_id: int
+    date_time: str
+
+class AppointmentCreate(AppointmentBase):
+    pass
+
+class AppointmentResponse(AppointmentBase):
+    id: int
+    status: str
+
+    class Config:
+        from_attributes = True
