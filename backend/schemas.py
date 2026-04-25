@@ -52,3 +52,14 @@ class AppointmentResponse(AppointmentBase):
 
     class Config:
         from_attributes = True
+
+class ProviderAppointmentResponse(BaseModel):
+    id: int
+    date_time: str
+    status: str
+    service_name: str
+    price: float
+    customer_name: str
+
+    class Config:
+        from_attributes = True

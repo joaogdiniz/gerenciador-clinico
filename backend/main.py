@@ -167,3 +167,32 @@ def search_services(name: str = None, min_price: float = None, max_price: float 
                 valid_services.append(service_dict)
 
     return valid_services
+
+@app.get("/appointments/provider/{provider_id}", response_model=list[schemas.ProviderAppointmentResponse])
+def get_provider_appointments(provider_id: int, db: Session = Depends(get_db)):
+    results = db.query(
+        models.Appointment.id,
+        models.Appointment.date_time,
+        models.Appointment.status,
+        models.Service.name.label("service_name"),
+        models.Service.price.label("price"),
+        models.User.name.label("customer_name")
+    ).join(
+        models.Service, models.Appointment.service_id == models.Service.id
+    ).join(
+        models.User, models.Appointment.customer_id == models.User.id
+    ).filter(
+        models.Appointment.provider_id == provider_id
+    ).all()
+
+    appointments = []
+    for r in results:
+        appointments.append({
+            "id": r.id,
+            "date_time": r.date_time,
+            "status": r.status,
+            "service_name": r.service_name,
+            "price": r.price,
+            "customer_name": r.customer_name
+        })
+    return appointments
