@@ -101,3 +101,18 @@ def create_service(service: schemas.ServiceCreate, db: Session = Depends(get_db)
     db.refresh(new_service)
 
     return new_service
+
+@app.get("/services/provider/{provider_id}", response_model=list[schemas.ServiceResponse])
+def get_provider_services(provider_id: int, db: Session = Depends(get_db)):
+    services = db.query(models.Service).filter(models.Service.provider_id == provider_id).all()
+    return services
+
+@app.delete("/services/{service_id}")
+def delete_service(service_id: int, db: Session = Depends(get_db)):
+    service = db.query(models.Service).filter(models.Service.id == service_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Serviço não encontrado.")
+    
+    db.delete(service)
+    db.commit()
+    return {"detail": "Serviço deletado com sucesso."}

@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { ArrowLeft, Calendar as CalendarIcon, Check, X } from "lucide-react";
+import { ArrowLeft, Calendar as CalendarIcon, Check, X, Trash2 } from "lucide-react";
 import {
   format,
   startOfMonth,
@@ -43,10 +43,15 @@ export default function RegisterService() {
   // selectedDays guarda os dias e os horários escolhidos. Ex: { "2023-09-15": ["06:00-07:00", "09:00-10:00"] }
   const [selectedDays, setSelectedDays] = useState<Record<string, string[]>>({});
 
-  // Estado do Modal
+  // Estado do Modal de Dias
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalDate, setModalDate] = useState<Date | null>(null);
   const [tempSlots, setTempSlots] = useState<string[]>([]); // Slots selecionados no modal temporariamente
+
+  // Estado do Modal de Serviços
+  const [isServicesModalOpen, setIsServicesModalOpen] = useState(false);
+  const [myServices, setMyServices] = useState<any[]>([]);
+  const [isLoadingServices, setIsLoadingServices] = useState(false);
 
   // Máscara de Moeda (ex: 1500 -> 15,00)
   const handlePrecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,6 +125,65 @@ export default function RegisterService() {
       });
     }
     closeModal();
+  };
+
+  const fetchMyServices = async () => {
+    if (!userId) return;
+    setIsLoadingServices(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/services/provider/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMyServices(data);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar serviços:", err);
+    } finally {
+      setIsLoadingServices(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyServices();
+  }, [userId]);
+
+  const getBookedSlotsForDate = (dateStr: string) => {
+    let booked: string[] = [];
+    myServices.forEach((srv) => {
+      if (srv.availability && srv.availability[dateStr]) {
+        booked = [...booked, ...srv.availability[dateStr]];
+      }
+    });
+    return booked;
+  };
+
+  const handleOpenServicesModal = () => {
+    fetchMyServices();
+    setIsServicesModalOpen(true);
+  };
+
+  const closeServicesModal = () => {
+    setIsServicesModalOpen(false);
+  };
+
+  const handleDeleteService = async (serviceId: number) => {
+    if (!window.confirm("Tem certeza que deseja excluir este serviço?")) return;
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/services/${serviceId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setMyServices((prev) => prev.filter((s) => s.id !== serviceId));
+        alert("Serviço deletado com sucesso!");
+      } else {
+        alert("Erro ao deletar serviço.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro de conexão ao deletar serviço.");
+    }
   };
 
   // Validação
@@ -271,9 +335,40 @@ export default function RegisterService() {
               <div className="grid grid-cols-7">
                 {daysInCalendar.map((day) => {
                   const dateStr = format(day, "yyyy-MM-dd");
+                  
+                  // Agrupar serviços deste dia
+                  const dayServices: { id: string | number, name: string, count: number }[] = [];
+                  
+                  myServices.forEach(srv => {
+                    if (srv.availability && srv.availability[dateStr] && srv.availability[dateStr].length > 0) {
+                      dayServices.push({
+                        id: srv.id,
+                        name: srv.name,
+                        count: srv.availability[dateStr].length
+                      });
+                    }
+                  });
+                  
+                  if (selectedDays[dateStr] && selectedDays[dateStr].length > 0) {
+                    dayServices.push({
+                      id: "new",
+                      name: nome || "Novo Serviço",
+                      count: selectedDays[dateStr].length
+                    });
+                  }
+
                   const isCurrentMonth = isSameMonth(day, currentMonth);
                   const isToday = isSameDay(day, new Date());
-                  const hasSlots = selectedDays[dateStr] && selectedDays[dateStr].length > 0;
+                  const hasSlots = dayServices.length > 0;
+
+                  // Cores: Verde, Roxo, Amarelo, Vermelho, Azul
+                  const SERVICE_COLORS = [
+                    "text-green-700 bg-green-100 border-green-200 dark:text-green-400 dark:bg-green-900/30 dark:border-green-800",
+                    "text-purple-700 bg-purple-100 border-purple-200 dark:text-purple-400 dark:bg-purple-900/30 dark:border-purple-800",
+                    "text-yellow-700 bg-yellow-100 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-900/30 dark:border-yellow-800",
+                    "text-red-700 bg-red-100 border-red-200 dark:text-red-400 dark:bg-red-900/30 dark:border-red-800",
+                    "text-blue-700 bg-blue-100 border-blue-200 dark:text-blue-400 dark:bg-blue-900/30 dark:border-blue-800"
+                  ];
 
                   return (
                     <button
@@ -282,24 +377,28 @@ export default function RegisterService() {
                       disabled={!isCurrentMonth}
                       className={`
                         min-h-[80px] p-2 border-r border-b border-zinc-200 dark:border-zinc-800 relative
-                        transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/80
+                        transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/80 flex flex-col justify-end
                         ${!isCurrentMonth ? "bg-zinc-100/50 dark:bg-zinc-900/50 text-zinc-400 dark:text-zinc-600 cursor-not-allowed" : "bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"}
-                        ${hasSlots ? "bg-[#e8f3ee] dark:bg-[#16653f]/20 hover:bg-[#d1e8dc]" : ""}
+                        ${hasSlots && isCurrentMonth ? "bg-zinc-50 dark:bg-zinc-800/30" : ""}
                       `}
                     >
                       <span className={`
                         absolute top-2 left-2 text-sm font-medium flex items-center justify-center w-7 h-7 rounded-full
                         ${isToday ? "bg-[#104d30] dark:bg-[#16653f] text-white" : ""}
-                        ${hasSlots && !isToday ? "text-[#104d30] dark:text-[#22c55e]" : ""}
                       `}>
                         {format(day, "d")}
                       </span>
                       
                       {hasSlots && (
-                        <div className="absolute bottom-2 left-2 flex flex-col items-start w-[calc(100%-16px)] overflow-hidden">
-                          <span className="text-[10px] font-semibold text-[#104d30] dark:text-[#22c55e] bg-white dark:bg-zinc-900 px-1.5 py-0.5 rounded shadow-sm border border-[#104d30]/20 dark:border-[#22c55e]/20 truncate max-w-full">
-                            {selectedDays[dateStr].length} horários
-                          </span>
+                        <div className="flex flex-col items-start w-full overflow-hidden gap-0.5 mt-6">
+                          {dayServices.map((srv, idx) => {
+                            const colorClass = SERVICE_COLORS[idx % SERVICE_COLORS.length];
+                            return (
+                              <span key={srv.id} title={srv.name} className={`text-[9px] font-semibold px-1 py-0.5 rounded shadow-sm border truncate w-full text-left ${colorClass}`}>
+                                {srv.count} horários
+                              </span>
+                            );
+                          })}
                         </div>
                       )}
                     </button>
@@ -307,7 +406,16 @@ export default function RegisterService() {
                 })}
               </div>
             </div>
-            <p className="text-xs text-zinc-500 mt-3 text-center">Clique em um dia para configurar os horários disponíveis.</p>
+            <p className="text-xs text-zinc-500 mt-3 text-center mb-6">Clique em um dia para configurar os horários disponíveis.</p>
+
+            <button
+              type="button"
+              onClick={handleOpenServicesModal}
+              className="w-full flex items-center justify-center space-x-2 text-[#104d30] dark:text-[#22c55e] font-medium p-3 rounded-lg border border-[#104d30] dark:border-[#22c55e] hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <CalendarIcon size={18} />
+              <span>Ver serviços agendados</span>
+            </button>
           </div>
         </div>
 
@@ -356,20 +464,27 @@ export default function RegisterService() {
               
               <div className="grid grid-cols-2 gap-3">
                 {AVAILABLE_SLOTS.map((slot) => {
+                  const dateStr = format(modalDate, "yyyy-MM-dd");
+                  const bookedSlots = getBookedSlotsForDate(dateStr);
+                  const isBooked = bookedSlots.includes(slot);
                   const isSelected = tempSlots.includes(slot);
+
                   return (
                     <button
                       key={slot}
-                      onClick={() => toggleSlot(slot)}
+                      onClick={() => !isBooked && toggleSlot(slot)}
+                      disabled={isBooked}
                       className={`
                         flex items-center justify-between px-3 py-2.5 rounded-lg border text-sm font-medium transition-colors
-                        ${isSelected 
-                          ? "border-[#104d30] dark:border-[#22c55e] bg-[#e8f3ee] dark:bg-[#16653f]/20 text-[#104d30] dark:text-[#22c55e]" 
-                          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300"}
+                        ${isBooked 
+                          ? "bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-600 cursor-not-allowed" 
+                          : isSelected 
+                            ? "border-[#104d30] dark:border-[#22c55e] bg-[#e8f3ee] dark:bg-[#16653f]/20 text-[#104d30] dark:text-[#22c55e]" 
+                            : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-700 dark:text-zinc-300"}
                       `}
                     >
                       {slot}
-                      {isSelected && <Check size={16} />}
+                      {isBooked ? <span className="text-xs font-normal">(Ocupado)</span> : isSelected && <Check size={16} />}
                     </button>
                   );
                 })}
@@ -389,6 +504,57 @@ export default function RegisterService() {
               >
                 Salvar Horários
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Serviços Cadastrados */}
+      {isServicesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-5 flex justify-between items-center border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 shrink-0">
+              <div>
+                <h3 className="text-lg font-medium text-zinc-800 dark:text-zinc-100">
+                  Meus Serviços Agendados
+                </h3>
+              </div>
+              <button 
+                onClick={closeServicesModal}
+                className="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto flex-1">
+              {isLoadingServices ? (
+                <div className="flex justify-center items-center py-10">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#104d30] dark:border-[#22c55e]"></div>
+                </div>
+              ) : myServices.length === 0 ? (
+                <p className="text-center text-zinc-500 py-10">Você ainda não tem serviços cadastrados.</p>
+              ) : (
+                <div className="space-y-4">
+                  {myServices.map((service) => (
+                    <div key={service.id} className="flex justify-between items-center p-4 border border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
+                      <div>
+                        <h4 className="font-semibold text-zinc-800 dark:text-zinc-100">{service.name}</h4>
+                        <p className="text-sm text-zinc-500 mt-1">
+                          R$ {service.price.toFixed(2).replace('.', ',')} • {service.duration} min
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteService(service.id)}
+                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-colors"
+                        title="Excluir serviço"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
