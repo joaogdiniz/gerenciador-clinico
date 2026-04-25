@@ -18,3 +18,21 @@ class UserResponse(BaseModel):
 class UserLogin(BaseModel):
     email: str
     password: str
+
+class ServiceCreate(BaseModel):
+    provider_id: int
+    name: str
+    duration: int
+    price: float
+    availability: dict | None = None
+
+class ServiceResponse(BaseModel):
+    id: int
+    provider_id: int
+    name: str
+    duration: int
+    price: float
+    availability: dict | None = None
+
+    class Config:
+        from_attributes = True

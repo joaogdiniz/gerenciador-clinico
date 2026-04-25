@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar as CalendarIcon, Check, X } from "lucide-react";
 import {
   format,
@@ -29,6 +29,8 @@ const AVAILABLE_SLOTS = [
 
 export default function RegisterService() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const userId = location.state?.user?.id;
 
   // Estados do formulário
   const [nome, setNome] = useState("");
@@ -127,17 +129,43 @@ export default function RegisterService() {
     duracaoNumber > 0 &&
     Object.keys(selectedDays).length > 0;
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (isValid) {
+      if (!userId) {
+        alert("Erro: Usuário não identificado. Por favor, faça login novamente.");
+        navigate("/");
+        return;
+      }
+
       const payload = {
-        nome,
-        preco: precoNumber,
-        duracao: duracaoNumber,
-        disponibilidade: selectedDays
+        provider_id: userId,
+        name: nome,
+        duration: duracaoNumber,
+        price: precoNumber,
+        availability: selectedDays
       };
-      console.log("Serviço cadastrado:", payload);
-      alert("Serviço cadastrado com sucesso! (Verifique o console)");
-      // navigate('/home'); // Opcional, pode limpar o form
+
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        const response = await fetch(`${apiUrl}/services/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || "Erro ao cadastrar serviço no banco de dados.");
+        }
+
+        alert("Serviço cadastrado com sucesso!");
+        navigate("/home", { state: { user: location.state?.user } });
+      } catch (err: any) {
+        console.error(err);
+        alert(err.message);
+      }
     }
   };
 

@@ -78,3 +78,26 @@ def login_user(login_data: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Senha incorreta.")
         
     return user
+
+# ROTAS DE SERVIÇO
+
+@app.post("/services/", response_model=schemas.ServiceResponse)
+def create_service(service: schemas.ServiceCreate, db: Session = Depends(get_db)):
+    # Verifica se o prestador existe e se é do tipo prestador
+    provider = db.query(models.User).filter(models.User.id == service.provider_id, models.User.user_type == "PRESTADOR").first()
+    if not provider:
+        raise HTTPException(status_code=404, detail="Prestador não encontrado.")
+
+    new_service = models.Service(
+        provider_id=service.provider_id,
+        name=service.name,
+        duration=service.duration,
+        price=service.price,
+        availability=service.availability
+    )
+    
+    db.add(new_service)
+    db.commit()
+    db.refresh(new_service)
+
+    return new_service

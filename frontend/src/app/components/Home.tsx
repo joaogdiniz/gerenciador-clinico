@@ -28,7 +28,7 @@ export default function Home() {
         {userType === "PRESTADOR" ? (
           <>
             <button 
-              onClick={() => navigate('/register-service')}
+              onClick={() => navigate('/register-service', { state: { user: location.state?.user } })}
               className="flex-1 bg-[#104d30] hover:bg-[#0a3320] dark:bg-[#16653f] dark:hover:bg-[#1a7a4c] text-white py-3.5 px-6 rounded-lg font-medium transition-all shadow-md active:scale-[0.98]"
             >
               Cadastro de serviços
