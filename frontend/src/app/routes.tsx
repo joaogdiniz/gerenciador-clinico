@@ -6,6 +6,7 @@ import Register from "./components/Register";
 import RegisterService from "./components/RegisterService";
 import SearchServices from "./components/SearchServices";
 import ProviderAppointments from "./components/ProviderAppointments";
+import CustomerAppointments from "./components/CustomerAppointments";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
       { path: "register-service", Component: RegisterService },
       { path: "search-services", Component: SearchServices },
       { path: "provider-appointments", Component: ProviderAppointments },
+      { path: "customer-appointments", Component: CustomerAppointments },
     ],
   },
 ]);

@@ -196,3 +196,42 @@ def get_provider_appointments(provider_id: int, db: Session = Depends(get_db)):
             "customer_name": r.customer_name
         })
     return appointments
+
+@app.get("/appointments/customer/{customer_id}", response_model=list[schemas.CustomerAppointmentResponse])
+def get_customer_appointments(customer_id: int, db: Session = Depends(get_db)):
+    results = db.query(
+        models.Appointment.id,
+        models.Appointment.date_time,
+        models.Appointment.status,
+        models.Service.name.label("service_name"),
+        models.Service.price.label("price"),
+        models.User.name.label("provider_name")
+    ).join(
+        models.Service, models.Appointment.service_id == models.Service.id
+    ).join(
+        models.User, models.Appointment.provider_id == models.User.id
+    ).filter(
+        models.Appointment.customer_id == customer_id
+    ).all()
+
+    appointments = []
+    for r in results:
+        appointments.append({
+            "id": r.id,
+            "date_time": r.date_time,
+            "status": r.status,
+            "service_name": r.service_name,
+            "price": r.price,
+            "provider_name": r.provider_name
+        })
+    return appointments
+
+@app.delete("/appointments/{appointment_id}")
+def delete_appointment(appointment_id: int, db: Session = Depends(get_db)):
+    appointment = db.query(models.Appointment).filter(models.Appointment.id == appointment_id).first()
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Agendamento não encontrado.")
+    
+    db.delete(appointment)
+    db.commit()
+    return {"detail": "Agendamento cancelado com sucesso."}
