@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { ArrowLeft, Calendar as CalendarIcon, Check, X, Trash2 } from "lucide-react";
